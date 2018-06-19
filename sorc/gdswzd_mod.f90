@@ -295,7 +295,7 @@
  REAL, OPTIONAL, INTENT(  OUT) :: YLON(NPTS),YLAT(NPTS),AREA(NPTS)
 !
  INTEGER                       :: IS1, IM, JM, NM, KSCAN, NSCAN, N
- INTEGER                       :: IOPF, NN, I, J
+ INTEGER                       :: ALTSCAN, IOPF, NN, I, II, J
  INTEGER                       :: I_OFFSET_ODD, I_OFFSET_EVEN
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  COMPUTE GRID COORDINATES FOR ALL GRID POINTS
@@ -305,6 +305,7 @@
      JM=IGDTMPL(9)
      NM=IM*JM
      NSCAN=MOD(IGDTMPL(19)/32,2)
+     ALTSCAN=MOD(IGDTMPL(19)/16,2)
    ELSEIF(IGDTNUM==1) THEN
      IM=IGDTMPL(8)
      JM=IGDTMPL(9)
@@ -334,6 +335,7 @@
      JM=IGDTMPL(9)
      NM=IM*JM
      NSCAN=MOD(IGDTMPL(18)/32,2)
+     ALTSCAN=MOD(IGDTMPL(18)/16,2)
    ELSEIF(IGDTNUM==40)THEN
      IM=IGDTMPL(8)
      JM=IGDTMPL(9)
@@ -367,7 +369,12 @@
        DO N=1,NM
          IF(NSCAN.EQ.0) THEN
            J=(N-1)/IM+1
-           I=N-IM*(J-1)
+           IF ((ALTSCAN == 0) .AND. (MOD(J,2) == 0)) THEN
+             II=N-IM*(J-1)
+             I=IM-II+1
+           ELSE
+             I=N-IM*(J-1)
+           ENDIF
          ELSE
            I=(N-1)/JM+1
            J=N-JM*(I-1)
