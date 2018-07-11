@@ -138,8 +138,8 @@ integer,parameter             :: nntran=4
 real(dp),dimension(nntran)    :: sschm,mg_alpha,mg_at,mg_ae,mg_c1,mg_c3,mg_cs
 real(dp),dimension(3,3,nntran):: rot6
 real(dp),dimension(3,3,6)     :: rotp
-integer,dimension(  6,nntran) :: kgperm,kgpermi
-integer,dimension(2:6,nntran) :: kgrot,kgroti
+integer,dimension(6,nntran)   :: kgperm,kgpermi
+integer,dimension(6,nntran)   :: kgrot,kgroti
 integer,dimension(nntran)     :: kgmode
 logical,dimension(nntran)     :: lormode,lschm
 logical                       :: linigtran

@@ -65,13 +65,13 @@ module pgn
 ! rotation indices corresponding to the protoframe tiles 2--6, each index being
 ! between 0 and 3, defines a 5-digit "quaternary", or base-4, numbers. If we 
 ! take protoframe tile-6 to correspond to the "units", tile-5 to the "fours"
-! and so on (implicitly, tile-1 therefore ends up with a "0"-digit of the
-! "1024s", which is why we don't need all six digits). Evalauting this single
+! and so on (tile-1 is always initialized with a "0"-digit of the
+! "1024s", which is why the rotation index is <1024). Evaluating this single
 ! equivalent number "quat" between 0 and 1023, can be conveniently done
 ! for any explicit rotations code, by a call to subroutine indexofquat.
 !
 ! The orientation in space of the cube as a whole is done with complete
-! generality by specifying the longitude (degrees positibe in the easterly
+! generality by specifying the longitude (degrees positive in the easterly
 ! sense) and the latitude (degrees positive in the northerly sense) of the
 ! center of the protoframe's tile-1, together with an azimuthal angle of 
 ! twist (degrees positive in the counterclockwise sense) of the actual 
@@ -83,7 +83,7 @@ module pgn
 !
 ! To sum up, the user-defined cubic arrangement (the "topology") of six map
 ! panels, and the orientation of the whole in space, can be specified
-! by providing to an initialization subroutine, which is here call 
+! by providing to an initialization subroutine, which is here called 
 ! "ini_orientation", the permutation index (in [0:719]), rotations index 
 ! (in [0:1023]), the protoframe tile-1 longitude, latitude and azimuth (all 
 ! in degrees as defined above), or, since the azimuth is very frequently
@@ -115,11 +115,11 @@ module pgn
 ! call xmtoxc(XM,XC,XCD,IPAN,ITRAN)
 ! and the 3*2 matrix, XCD, is also provided as the Jacobian, d(XC)/d(XM) of
 ! this transformation, where XC is always a unit vector (i.e., we take the
-! radius of the spheric earth to be 1). We can omit ITRAN if, by default, we
+! radius of the spherical earth to be 1). We can omit ITRAN if, by default, we
 ! assume it to be ITRAN=1, as we might very often do when we are only
 ! concerned with a single cubed-sphere transformation).
 !
-! Conversely, we might wish to know which map panel a given cartesian 3-vector
+! Conversely, we might wish to know which map panel a given Cartesian 3-vector
 ! XC corresponds to, and which coordinate pair XM on this map panel (or tile)
 ! is defined within the standard range [-1.,1.] for each component. In this 
 ! case, we initial set IPAN=0, and call the routine to invert the mapping:
@@ -128,7 +128,7 @@ module pgn
 ! defined when going from a 3-vector to a 2-vector, so instead, it is the
 ! usual generalized inverse of the earlier defined XCD.
 !
-! If we want to FORCE the tile, or panel, index IPAN to be a specified one,
+! If we want to FORCE the tile, or panel, index IPAN, to be a specified one,
 ! regardless of whether the coordinates (x,y)=XM actually will end up lying
 ! within the proper range, [-1.,1.], then we set IPAN to be the desired
 ! index in the range 1--6 and:
@@ -226,9 +226,9 @@ real(dp),intent(in ):: lon,lat,az
 real(dp),dimension(3,3):: twist
 real(dp)               :: rlon,clon,slon,rlat,clat,slat,raz,caz,saz
 !=============================================================================
-if(itran<1 .or. itran>nntran)stop'In ini_orientation; itran out of range'
-if(gperm<0 .or. gperm>719)stop'In orient_gntran; gperm out of range'
-if(grot<0  .or. grot>1023)stop'In orient_gntran; grot out of range'
+if(itran<1 .or. itran>nntran)stop 'In ini_orientation; itran out of range'
+if(gperm<0 .or. gperm>719)stop 'In orient_gntran; gperm out of range'
+if(grot<0  .or. grot>1023)stop 'In orient_gntran; grot out of range'
 if(.not.linigtran)call ini_generic
 call permofindex(gperm,kgperm(:,itran))
 call quatofindex(grot ,kgrot (:,itran))
@@ -252,7 +252,7 @@ subroutine ini_eacube(itran)!                                     [ini_eacube]
 !=============================================================================
 use pgn_tables, only: nntran,lormode,kgmode,lschm
 integer,intent(in ):: itran
-if(itran<1 .or. itran>nntran)stop'In ini_eacube; itran out of range'
+if(itran<1 .or. itran>nntran)stop 'In ini_eacube; itran out of range'
 if(.not.lormode(itran))then
    print'("In ini_eacube; Orientation of the cube of transformation",i2)',itran
    print'("has not been initialized.")'
@@ -269,7 +269,7 @@ subroutine ini_edcube(itran)!                                     [ini_edcube]
 !=============================================================================
 use pgn_tables, only: nntran,lormode,kgmode,lschm
 integer,intent(in ):: itran
-if(itran<1 .or. itran>nntran)stop'In ini_edcube; itran out of range'
+if(itran<1 .or. itran>nntran)stop 'In ini_edcube; itran out of range'
 if(.not.lormode(itran))then
    print'("In ini_edcube; Orientation of the cube of transformation",i2)',itran
    print'("has not been initialized.")'
@@ -289,7 +289,7 @@ use pgn_tables, only: nntran,lormode,kgmode,lschm,mg_alpha,mg_at,mg_ae, &
 integer, intent(in ):: itran
 real(dp),intent(in ):: mobzone
 !-----------------------------------------------------------------------------
-if(itran<1 .or. itran>nntran)stop'In ini_mncube; itran out of range'
+if(itran<1 .or. itran>nntran)stop 'In ini_mncube; itran out of range'
 if(.not.lormode(itran))then
    print'("In ini_mncube; Orientation of the cube of transformation",i2)',itran
    print'("has not been initialized.")'
@@ -311,7 +311,7 @@ use pgn_tables, only: nntran,kgmode,lschm,sschm
 integer, intent(in ):: itran
 real(dp),intent(in ):: s
 !=============================================================================
-if(itran<1 .or. itran>nntran)stop'In ini_schmidt; itran out of range'
+if(itran<1 .or. itran>nntran)stop 'In ini_schmidt; itran out of range'
 if(kgmode(itran)==0)then
    print'("In ini_schmidt; Gnomonic grid type for transformation",i2)',itran
    print'("has not been initialized")'
@@ -356,7 +356,7 @@ integer, dimension(2,2,0:3):: twists
 integer                    :: irot,jpan
 data twists/1,0,0,1,   0,1,-1,0,  -1,0,0,-1,  0,-1,1,0/
 !=============================================================================
-if(itran<1.or.itran>nntran)stop'In xmtoxc; transformation index out of bounds'
+if(itran<1.or.itran>nntran)stop 'In xmtoxc; transformation index out of bounds'
 select case(kgmode(itran))
 case(1)
    xm1=xm
@@ -371,7 +371,7 @@ case default
    stop
 end select
 jpan=kgpermi(ipan,itran)
-irot=0; if(jpan>1)irot=kgrot(jpan,itran)
+irot=kgrot(jpan,itran)
 twist=twists(:,:,irot)
 xm1=matmul(twist,xm1)
 a=tan(xm1(1)*piq); aa=a*a; aap=aa+u1
@@ -433,12 +433,12 @@ integer,dimension(2,2,0:3):: twists
 integer                   :: irot,jpan
 data twists/1,0,0,1,   0,1,-1,0,  -1,0,0,-1,  0,-1,1,0/
 !=============================================================================
-if(itran<1.or.itran>nntran)stop'In xctoxm; transformation index out of bounds'
+if(itran<1.or.itran>nntran)stop 'In xctoxm; transformation index out of bounds'
 if(.not.lormode(itran))then
    print'("In xctoxm; transformation, ",i2," has not been initialized")',itran
    stop
 endif
-if(ipan<0.or.ipan>6)stop'In xctoxm; invalid ipan specified'
+if(ipan<0.or.ipan>6)stop 'In xctoxm; invalid ipan specified'
 xccd=transpose(rot6(:,:,itran))
 xct=normalized(xc)
 xct=matmul(xccd,xct)
@@ -452,7 +452,7 @@ if(ipan==0)then
 else
    jpan=kgpermi(ipan,itran)
 endif
-irot=0; if(jpan>1)irot=kgrot(jpan,itran)
+irot=kgrot(jpan,itran)
 twist=twists(:,:,irot)
 
 ! Temporarily rotate the normalized cartesian vector so that it belongs 
@@ -755,11 +755,11 @@ integer,dimension(m),intent(out):: perm
 integer,dimension(m):: mixed
 integer             :: j,k,L,Lp
 !=============================================================================
-if(i<0)stop'In permofindex; index must not be negative'
+if(i<0)stop 'In permofindex; index must not be negative'
 L=i
 mixed(1)=0; perm(1)=1
 do j=2,m; perm(j)=j; Lp=L/j; mixed(j)=L-Lp*j; L=Lp; enddo
-if(L>0)stop'In permofindex; index is too large'
+if(L>0)stop 'In permofindex; index is too large'
 do j=1,m
    k=j+mixed(m+1-j); L=perm(k); perm(j+1:k)=perm(j:k-1); perm(j)=L
 enddo
@@ -776,33 +776,34 @@ subroutine indexofperm(perm,i)!                                  [indexofperm]
 integer,dimension(m),intent(in ):: perm
 integer,             intent(out):: i
 !-----------------------------------------------------------------------------
-integer:: j,jc,k,p,f
+integer:: j,jc,k,p,ff
 !=============================================================================
-f=1; i=0
+ff=1; i=0
 do j=1,m-1
-   f=f*j! factorial
-   jc=m-j; p=perm(jc); do k=jc+1,m; if(p>perm(k))i=i+f; enddo
+   ff=ff*j! factorial
+   jc=m-j; p=perm(jc); do k=jc+1,m; if(p>perm(k))i=i+ff; enddo
 enddo
 end subroutine indexofperm
 
 !=============================================================================
 subroutine quatofindex(i,quat)!                                  [quatofindex]
 !=============================================================================
-! With M=6, and freedom to rotate tiles maps, 2 -- m, of the protoframe 
+! With M=6, and freedom to rotate tile maps, 2 -- m, of the protoframe 
 ! Return the quaternary (M-1)-digit, QUAT (ordered such that the units are in
 ! the last position, M=6) that corresponds to index I.
 !=============================================================================
-integer,               intent(in ):: i
-integer,dimension(2:m),intent(out):: quat
+integer,             intent(in ):: i
+integer,dimension(m),intent(out):: quat
 !-----------------------------------------------------------------------------
 integer:: ii,j
 !=============================================================================
 ii=i
+quat(1)=0
 do j=m,2,-1
    quat(j)=mod(ii,4)
    ii=ii/4
 enddo
-if(ii>0)stop'In quatofindex; i is too large for only (m-1) digits'
+if(ii>0)stop 'In quatofindex; i is too large for only (m-1) digits'
 end subroutine quatofindex
 
 !=============================================================================
@@ -812,13 +813,13 @@ subroutine indexofquat(quat,i)!                                  [indexofquat]
 ! when ordered such that the units are in position M, the 4's in position
 ! M-1, and so on.
 !=============================================================================
-integer,dimension(2:m),intent(in ):: quat
-integer,               intent(out):: i
+integer,dimension(m),intent(in ):: quat
+integer,             intent(out):: i
 !-----------------------------------------------------------------------------
 integer:: j
 !==============================================================================
 i=0
-do j=2,m
+do j=2,m ! <- Ignore digit quat(1) corresponding to "1024's"; it should be 0.
    i=4*i+quat(j)
 enddo
 end subroutine indexofquat
@@ -826,21 +827,19 @@ end subroutine indexofquat
 !=============================================================================
 subroutine recpq(pa,qa,recpa,recqa)!                                   [recpq]
 !=============================================================================
-! For a relative ptime-permuation, pa, and 2:6 rotation quaternary digits, qa,
+! For a relative permutation, pa, and rotation quaternary digits, qa,
 ! return the corresponding codes for the reciprocal relationship,
 ! recpa, recqa.
 !=============================================================================
-integer,dimension(m),  intent(in ):: pa
-integer,dimension(2:m),intent(in ):: qa
-integer,dimension(m),  intent(out):: recpa
-integer,dimension(2:m),intent(out):: recqa
+integer,dimension(m),  intent(in ):: pa,qa
+integer,dimension(m),  intent(out):: recpa,recqa
 !-----------------------------------------------------------------------------
 integer:: i,p
 !=============================================================================
 do i=1,m
    p=pa(i)
    recpa(p)=i
-   if(i>1)recqa(p)=modulo(-qa(i),4)
+   recqa(p)=modulo(-qa(i),4)
 enddo
 end subroutine recpq
 
@@ -849,13 +848,13 @@ subroutine getpqawrtb(pa,qa,pb,qb, pawrtb,qawrtb)!                [getpqawrtb]
 !=============================================================================
 ! Given the explicit 6-index permutation, pa, and rotation code, qa, from
 ! the standard protoframe, of frame A, and the corresponding permutation, pb,
-! and rotation code, qb, of frame B, return the reltative permuation 
+! and rotation code, qb, of frame B, return the relative permutation 
 ! and rotation code of A with respect to frame B.
 !=============================================================================
-integer,dimension(  m),intent(in ):: pa,pb
-integer,dimension(2:m),intent(in ):: qa,qb
-integer,dimension(  m),intent(out):: pawrtb
-integer,dimension(2:m),intent(out):: qawrtb
+integer,dimension(m),intent(in ):: pa,pb
+integer,dimension(m),intent(in ):: qa,qb
+integer,dimension(m),intent(out):: pawrtb
+integer,dimension(m),intent(out):: qawrtb
 !-----------------------------------------------------------------------------
 integer:: a,b,i
 !=============================================================================
@@ -863,7 +862,7 @@ do i=1,m
    a=pa(i)
    b=pb(i)
    pawrtb(b)=a
-   if(i>1)qawrtb(b)=modulo(qa(i)-qb(i),4)
+   qawrtb(b)=modulo(qa(i)-qb(i),4)
 enddo
 end subroutine getpqawrtb
 
@@ -872,16 +871,15 @@ subroutine pqawrtb(ib,jb,pb,pawrtb,qawrtb,ia,ja,pa,qa)!              [pqawrtb]
 !=============================================================================
 ! Given the permutation, pawrtb, defining the cubic tile indices of frame A
 ! with respect to frame B, and the relative rotations (in right angles), qawrtb,
-! of A's map ccordinates relative to the 2nd through 6th of B's map coordinates,
+! of A's map coordinates relative to the 2nd through 6th of B's map coordinates,
 ! then, for tile-centered integer grid coordinate, (ib,jb), in tile pb of 
 ! frame B, return the corresponding coordinates, (ia,ja), of this grid
 ! coordinates in frame A together with the tile index, pa, there, and relative
 ! map rotation (in right angles) of frame A with respect to frame B.
 !============================================================================= 
-integer,               intent(in ):: ib,jb,pb
-integer,dimension(  m),intent(in ):: pawrtb
-integer,dimension(2:m),intent(in ):: qawrtb
-integer,               intent(out):: ia,ja,pa,qa
+integer,             intent(in ):: ib,jb,pb
+integer,dimension(m),intent(in ):: pawrtb,qawrtb
+integer,             intent(out):: ia,ja,pa,qa
 !=============================================================================
 pa=pawrtb(pb)
 qa=qawrtb(pb)
