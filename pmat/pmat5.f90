@@ -1,6 +1,6 @@
 !
 !                                **********************************************
-!                                *  MODULES cstgeo, dcstgeo, pgeo             *
+!                                *  MODULES cstgeo, dcstgeo, pmat5            *
 !                                *  R. J. Purser, NOAA/NCEP/EMC          1996 * 
 !                                *                              26 Sep   2012 *
 !                                *  jim.purser@noaa.gov                       *
@@ -9,7 +9,7 @@
 ! Handy geographical transformations
 !
 ! DEPENDENCIES
-! Modules:  pkind, pietc, peuc
+! Modules:  pkind, pietc, pmat4
 !=============================================================================
 module cstgeo ! Constants for orientation and stretching of map
 !=============================================================================
@@ -32,7 +32,7 @@ end module dcstgeo
 
 ! Utility routines for orienting the globe and basic geographical mappings
 !=============================================================================
-module pgeo
+module pmat5
 !=============================================================================
 use pkind, only: sp,dp
 implicit none
@@ -405,7 +405,7 @@ subroutine paraframe(xp,yp,zp, xv,yv,zv)!                           [paraframe]
 ! components, {xv,yv}, that are the result of parallel-transport of {xp,yp}
 ! along the geodesic between P and V
 !==============================================================================
-use peuc,  only: cross_product,normalized
+use pmat4,  only: cross_product,normalized
 real(dp),dimension(3),intent(in ):: xp,yp,zp, zv
 real(dp),dimension(3),intent(out):: xv,yv
 !------------------------------------------------------------------------------
@@ -785,7 +785,7 @@ do i=1,n
 enddo
 end subroutine plctoc
 
-end module pgeo
+end module pmat5
 
 
 

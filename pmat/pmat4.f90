@@ -1,6 +1,6 @@
 !
 !                                **********************************************
-!                                *             MODULE peuc                    *
+!                                *             MODULE pmat4                   *
 !                                *  R. J. Purser, NOAA/NCEP/EMC      Oct 2005 * 
 !                                *                              18th May 2012 *
 !                                *  jim.purser@noaa.gov                       *
@@ -52,7 +52,7 @@
 ! Additional Modules      : pkind, pietc
 !
 !============================================================================
-module peuc
+module pmat4
 !============================================================================
 use pkind, only: sp,dp,dpc
 implicit none
@@ -1781,4 +1781,4 @@ call zmobius(aai,bbi,cci,ddi, zz,infz, zw,infw)
 end subroutine zmobiusi
 
 
-end module peuc
+end module pmat4
