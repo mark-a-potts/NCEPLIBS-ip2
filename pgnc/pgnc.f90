@@ -16,15 +16,31 @@
 !=============================================================================
 module pgnc
 !=============================================================================
+! The transformations with n=0
 ! Generic smooth cubed-sphere gnomonic grid transformations that include
 ! equidistant, edge-uniform, equiangular and others in this continuous family,
-! are accommodated with a parameter setting, n=0, and a non-negative real
-! parameter, alpha, that specifies which member of this continuous family
-! is intended. Alpha=0 implies it is the equidistant version; alpha=0.5 implies
-! it is the edge-uniform grid presently used in the FV3; alpha=1.0 implies
-! that it is the equiangular version. For alpha<1, the grid spacing along
-! a tile-median gets finer towards the edge; alpha>1 is also allowed and
-! causes the grid spacing to get coarser towards the edge.
+! are accommodated with a parameter setting, n=0, and a real parameter, alpha,
+! in the range, -1 < alpha < +infinity, that specifies which member of this 
+! continuous family is intended. (This parameter is referred to as "B" in
+! the NOAA/NCEP Office Note 496, Appendix A, and elsewhere.) When alpha lies
+! in the range (0,1] it has the interpretation of being [cos(beta)]^2, where,
+! for a purely gnomonic grid (untransformed by the Schmidt operation), this
+! beta is the angle from the tile center of the arc of a "meridian" great
+! circle, belonging to one "x" family of the grid lines, along which the
+! intersections of the other "y" family of the grid lines produces a series of
+! points that are exactly uniformly spaced in distance. In the limiting
+! case, alpha=0 (beta=90 degrees) this implies the equidistant version of the
+! gnomonic grid (as originally introduced by Sadourny 1972); alpha=0.5 (beta
+! = 45 degrees) implies the edge-uniform grid presently used in the FV3; 
+! alpha=1.0 (beta = 0) implies that it is the equiangular version. 
+!
+! For alpha<1, the spacing along a tile-median ("x=0") of the intersections 
+! made with the transversal family ("y") get progressively closer from tile
+! center towards an edge; for alpha=1, the spacing of these intersections 
+! becomes uniform, as we have already said; for alpha>1, these intersections
+! become progressively farther apart from tile center towards an edge.
+!
+! The transformations with n>0
 ! Alternatively, we can use integer n>0 to indicate that the intended 
 ! grid is one of the Mobius net kind, where this n specifies the intended
 ! degree of continuity of the transformation across the edges of the zones
@@ -141,7 +157,7 @@ module pgnc
 ! call xctoxm(XC,XM,XMD,IPAN,ITRAN)
 ! otherwsie exactly as before. This is very useful during interpolations
 ! when it becomes necessary to know the coordinates of a point (even a grid 
-! point) inside panel IPAN_A with respect to the map coorinates of the
+! point) inside panel IPAN_A with respect to the map coordinates of the
 ! neighboring panel, say IPAN_B.
 !=============================================================================
 use pkind,      only: dp                     ! double precision real kind
@@ -161,7 +177,7 @@ real(dp),parameter            :: piq=pi/4,u4opi=u4/pi
 real(dp),dimension(3,3,nntran):: rot6
 real(dp),dimension(3,3,6)     :: rotp
 real(dp),dimension(nn,nntran) :: gtv
-real(dp),dimension(nntran)    :: gtkay,gtphit,gtat,gtcb,gtatcb,gtschm
+real(dp),dimension(nntran)    :: gtkay,gtphit,gtrb,gtat,gtcb,gtatcb,gtschm
 integer,dimension(6,nntran)   :: kgperm,kgpermi
 integer,dimension(6,nntran)   :: kgrot
 integer,dimension(nntran)     :: gtcont
@@ -169,6 +185,7 @@ logical,dimension(nntran)     :: linic,linio,linig,linis
 logical                       :: lini
 data lini/.false./
 
+interface atanh;          module procedure atanh;                end interface
 interface ini_generic;    module procedure ini_generic;          end interface
 interface fin_generic;    module procedure fin_generic;          end interface
 interface ini_orientation
@@ -201,6 +218,19 @@ interface getpqawrtb;     module procedure getpqawrtb;           end interface
 interface pqawrtb;        module procedure pqawrtb;              end interface
 
 contains
+
+!=============================================================================
+function atanh(ta) result(a)!                                          [atanh]
+!=============================================================================
+real(dp),intent(IN ):: ta
+real(dp)            :: a,tt
+real(dp),parameter  :: one=1
+!=============================================================================
+if(abs(ta)>=one)stop 'In atanh; no solution'
+if(abs(ta)>1.e-3_dp)then; a=log((one+ta)/(one-ta))/2
+else; tt=ta*ta;            a=ta*(one+tt*(one/3+tt*(one/5+tt*(one/7+tt/9))))
+endif
+end function atanh
 
 !==============================================================================
 subroutine ini_generic!                                           [ini_generic]
@@ -328,10 +358,16 @@ if(.not.lini)call ini_generic
 if(itran<1 .or. itran>nntran)stop 'In ini_gridtype; itran out of range'
 if(.not.linio(itran))stop &
      'In ini_gridtype; a call to ini_orientation must precede this call'
-if(alpha<u0)stop 'In ini_gridtype; parameter alpha must not be negative'
+if(alpha <= -u1)stop 'In ini_gridtype; parameter alpha must be greater than -1'
+gtrb(itran)=alpha
 gtcont(itran)=0
-gtcb(itran)=sqrt(alpha)
-gtatcb(itran)=atan(gtcb(itran))
+if(alpha>=u0)then
+   gtcb(itran)=sqrt(alpha)
+   gtatcb(itran)=atan(gtcb(itran))
+else
+   gtcb(itran)=sqrt(-alpha)
+   gtatcb(itran)=atanh(gtcb(itran))
+endif
 print '("Grid transformation,",i2," initialized as generic gnomonic type,")',&
      itran
 print '("Stretching-profile parameter, alpha = [cos[beta]]^2 = ",f12.8)',alpha
@@ -483,7 +519,7 @@ real(dp),dimension(3)      :: xc1
 real(dp),dimension(2)      :: xm1
 real(dp),dimension(nn)     :: v
 real(dp)                   :: a,aa,aap,b,bb,bbp,z,zzz,aapzzz,bbpzzz,ab,&
-                              cb,atcb,phit,at,kay
+                              rb,cb,atcb,phit,at,kay
 integer, dimension(2,2,0:3):: twists
 integer                    :: i,irot,jpan,n
 data twists/1,0,0,1,   0,1,-1,0,  -1,0,0,-1,  0,-1,1,0/
@@ -495,9 +531,10 @@ if(.not.linig(itran))then
 endif
 n=gtcont(itran)
 if(n==0)then
+   rb=gtrb(itran)
    cb=gtcb(itran)
    atcb=gtatcb(itran)
-   xm1d=0;do i=1,2;call ggtoea(cb,atcb,xm(i),xm1(i),xm1d(i,i));enddo
+   xm1d=0;do i=1,2;call ggtoea(rb,cb,atcb,xm(i),xm1(i),xm1d(i,i));enddo
 else
    phit=gtphit(itran)
    kay=gtkay(itran)
@@ -563,7 +600,7 @@ real(dp),dimension(2,2)   :: em
 real(dp),dimension(2)     :: xm1
 real(dp),dimension(2,2)   :: twist
 real(dp),dimension(nn)    :: v
-real(dp)                  :: cb,atcb,kay,phit
+real(dp)                  :: rb,cb,atcb,kay,phit
 integer, dimension(1)     :: ii
 integer,dimension(2,2,0:3):: twists
 integer                   :: i,irot,jpan,n
@@ -599,9 +636,10 @@ xm=(/atan(xct(2)/xct(1)),atan(xct(3)/xct(1))/)/piq
 xm=matmul(xm,twist)
 n=gtcont(itran)
 if(n==0)then
+   rb=gtrb(itran)
    cb=gtcb(itran)
    atcb=gtatcb(itran)
-   em=0;do i=1,2;call eatogg(cb,atcb,xm(i),xm1(i),em(i,i));enddo
+   em=0;do i=1,2;call eatogg(rb,cb,atcb,xm(i),xm1(i),em(i,i));enddo
    xm=xm1
 else
    phit=gtphit(itran)
@@ -656,37 +694,55 @@ xead=dphi*u4opi
 end subroutine mntoea
 
 !=============================================================================
-subroutine eatogg(cb,atcb,xea,xgg,xggd)!                              [eatogg]
+subroutine eatogg(a,cb,atcb,xea,xgg,xggd)!                            [eatogg]
 !=============================================================================
 ! Equiangular (EA) to generic gnomonic (GG) map coordinates, together 
 ! with the jacobian, xggd=d(xgg)/d(xea) of this transformation.
 !==============================================================================
-real(dp),intent(in ):: cb,atcb
+real(dp),intent(in ):: a,cb,atcb
 real(dp),intent(in ):: xea
 real(dp),intent(out):: xgg,xggd
 !-----------------------------------------------------------------------------
-real(dp):: tea
+real(dp):: tea,teasp
 !=============================================================================
 tea=tan(piq*xea)
-xgg=atan(cb*tea)/atcb
-xggd=(piq*cb/atcb)*(1+tea**2)/(1+cb**2*tea**2)
+teasp=tea**2+u1
+if(a<u0)then
+   xgg=atanh(cb*tea)/atcb
+   xggd=(piq*cb/atcb)*teasp/(u1-cb**2*tea**2)
+elseif(a>u0)then
+   xgg=atan(cb*tea)/atcb
+   xggd=(piq*cb/atcb)*teasp/(u1+cb**2*tea**2)
+else
+   xgg=tea
+   xggd=piq*teasp
+endif
 end subroutine eatogg
 
 !=============================================================================
-subroutine ggtoea(cb,atcb,xgg,xea,xead)!                              [ggtoea]
+subroutine ggtoea(a,cb,atcb,xgg,xea,xead)!                            [ggtoea]
 !=============================================================================
 ! Generic gnomonic (GG) to equiangular (EA) gnomonic map coordinates, together
 ! with the jacobian, xead=d(xea)/d(xgg) of this transformation.
 !=============================================================================
-real(dp),intent(in ):: cb,atcb
+real(dp),intent(in ):: a,cb,atcb
 real(dp),intent(in ):: xgg
 real(dp),intent(out):: xea,xead
 !-----------------------------------------------------------------------------
 real(dp):: tgg
 !=============================================================================
-tgg=tan(atcb*xgg)
-xea =u4opi*atan(tgg/cb)
-xead=u4opi*cb*atcb*(u1+tgg**2)/(cb**2+tgg**2)
+if(a<u0)then
+   tgg=tanh(atcb*xgg)
+   xea=u4opi*atan(tgg/cb)
+   xead=u4opi*cb*atcb*(u1-tgg**2)/(cb**2+tgg**2)
+elseif(a>u0)then
+   tgg=tan(atcb*xgg)
+   xea =u4opi*atan(tgg/cb)
+   xead=u4opi*cb*atcb*(u1+tgg**2)/(cb**2+tgg**2)
+else
+   xea =u4opi*atan(xgg)
+   xead=u4opi/(u1+xgg**2)
+endif
 end subroutine ggtoea
 
 !=============================================================================
