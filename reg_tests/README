@@ -240,7 +240,7 @@ that exercised every routine.
       2) Create staggered velocity data from unstaggered data.
       3) Create unstaggered data from staggered mass data.
       4) Create unstaggered data from staggered velocity data.
-5)  ipxwafs - Test ip routines ipxwafs, ipxwafs2 and ipxwafs3 by 
+5)  ipxwafs - Test routines ipxwafs, ipxwafs2 and ipxwafs3 by 
     transforming data between 'full' and 'thinned' WAFS grids 37 and 44.
     Routine ixpwafs does not handle bitmapped data, so a field of
     600mb temperature is transformed when testing this routine.  
@@ -277,7 +277,7 @@ used to sanity check the data.  So when viewing, do a 'set mproj off'.
 More detailed information about each test is described in a README file in that
 test's subdirectory.
 
-Below is a table of a routine or module in iplib and which regression test(s) invoke it.
+Below is a table of a routine or module and which regression test(s) invoke it.
 
 subroutine or
 module name                      regression test
