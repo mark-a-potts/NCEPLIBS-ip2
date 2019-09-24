@@ -5,7 +5,7 @@ add_definitions( ${CMAKE_Fortran_d_FLAGS} )
 add_library(${LIBNAME} STATIC ${LIB_d_SRC} )
 set(CMAKE_INCLUDE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include_d")
 set_target_properties(${LIBNAME} PROPERTIES Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include_d")
-target_include_directories(${LIBNAME} PUBLIC "${CMAKE_CURRENTT_BINARY_DIR}/include_d")
+target_include_directories(${LIBNAME} PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include_d")
 
 install(TARGETS ${LIBNAME}
         RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
